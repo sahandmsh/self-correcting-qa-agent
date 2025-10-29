@@ -1,7 +1,0 @@
-{
-    "python.terminal.useEnvFile": true,
-    "python.envFile": "${workspaceFolder}/rag_and_agents/.env",
-    "python.defaultInterpreterPath": "/Users/sahand/Natural Language Processing/nlp/bin/python",
-    "python-envs.pythonProjects": []
-
-}
