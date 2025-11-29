@@ -1,60 +1,88 @@
+from agent.agent import QAAgent
+from base.constants import Constants
 from config import HF_TOKEN, GOOGLE_API_KEY
 from google.genai import types
 import time
-from rag.rag import RAGAnswerRetrieval, RAGCorpusManager
+from rag.rag_content_retriever import RAGContentRetriever, RAGCorpusManager
+from agent.tools.rag_tool import RagTool
+from agent.tools.web_search_tool import WebSearchTool
 from utils.model_loader import ModelLoader
 from utils.dataset_utils import DataSetUtil
+from web_search.web_search import WebSearch
+from agent.tools.web_search_tool import WebSearchTool
 
+"""
+* I need to give the agent a tool to call so that it can clear the knowledge base used by RAG_TOOL
+* FIx the way the tool is being called (args are not passed correctly)
+* I need to add capability to process a given document and use rag to answer questions based on that document.
+  - I actually can modify the rag tool to accept a document as input, process it, add it to the index, and then answer questions based on it.
+"""
 
 if __name__ == "__main__":
-    """Following is an example use case of the above RAG implementation"""
-    """1. The knowledge base is created by sampling the Squad dataset."""
+
+
+    model_loader = ModelLoader()
+    tokenizer = model_loader.load_hf_tokenizer(hugging_face_token = HF_TOKEN)
+    cross_encoder = model_loader.load_hf_cross_encoder(hugging_face_token = HF_TOKEN)
+    sentence_transformer = model_loader.load_sentence_embedding_model(hugging_face_token = HF_TOKEN)
+
+    generative_model = model_loader.load_gemini_generative_model(google_api_key = GOOGLE_API_KEY, config = types.GenerateContentConfig(), model_name = Constants.ModelNames.Gemini.GEMINI_2_5_PRO)
+    # generative_model = model_loader.load_hf_generative_model(hugging_face_token = HF_TOKEN)
+
+
+    rag_corpus_manager_for_knowledge_base = RAGCorpusManager(sentence_transformer = sentence_transformer)
+    rag_corpus_manager_for_web_search_tool = RAGCorpusManager(sentence_transformer = sentence_transformer)
     dataset_util = DataSetUtil()
     knowledge_base = dataset_util.load_qa_dataset()
-    """2. Load the tokenizer, cross encoder, and sentence transformer (for biencoder)."""
-    model_loader = ModelLoader()
-    tokenizer, cross_encoder, sentence_transformer = model_loader.load_hf_models(hugging_face_token = HF_TOKEN)
-    """### 3. Create the rag_corpus object and index the given knowledge base after chunking its text and calculate sentence embeddings."""
-    rag_corpus = RAGCorpusManager(sentence_transformer = sentence_transformer)
-    rag_corpus.add_update_data_and_index(knowledge_base)
-    """### 4. The next step is to load a generative language model."""
-    config = types.GenerateContentConfig(
-        temperature=0.5,
-        max_output_tokens= 1024,
-        system_instruction="Return plain text only, no markdown, no special characters. Only used provided 'contexts' to generate response. Always Return 'I don't know' if the response is not found in the context."
-    )
-    generative_model = model_loader.load_gemini_model(google_api_key = GOOGLE_API_KEY, config = config)
-    """### 5. Then, the rag_response_retriever object is created."""
-    rag_response_retriever = RAGAnswerRetrieval(tokenizer, cross_encoder, generative_model)
-    """### 6. The retriever is now ready to be used. Following are a few example use cases of finding the answer of the given question using the developed RAG pipeline."""
-    question = "Where is Notre Dame?"
-    response = rag_response_retriever.find_query_response(rag_corpus, question)[1]
-    print(f"{question} {response}")
+    rag_corpus_manager_for_knowledge_base.add_update_data_and_index(knowledge_base)
+    rag_content_retriever = RAGContentRetriever(cross_encoder, generative_model)
+    rag_tool = RagTool(rag_corpus_manager_for_knowledge_base, rag_content_retriever)
+    web_search_tool = WebSearchTool(rag_content_retriever=rag_content_retriever, rag_corpus=rag_corpus_manager_for_web_search_tool)
+    qa_agent = QAAgent(rag_tool, web_search_tool, generative_model)
 
-    time.sleep(15)
-    question = "Where is Indiana?"
-    rag_response_retriever.find_query_response(rag_corpus, question)[1]
-    print(f"{question} {response}")
-
-    time.sleep(15)
-    question = "Who is Notre Dome President?"
-    response = rag_response_retriever.find_query_response(rag_corpus, question)[1]
-    print(f"{question} {response}")
-
-    time.sleep(15)
-    question = "Who is Notre Dome President in 2008?"
-    response = rag_response_retriever.find_query_response(rag_corpus, question)[1]
-    print(f"{question} {response}")
-
-    """ NOTE: The RAG pipeline may fail to find an answer to a question in the following cases:
-
-    * The answer does not exist in the underlying knowledge base or database.
-
-    * The RAG retriever fails to retrieve the relevant context for the query.
-
-    * The generative model fails to produce the correct answer even when the relevant context is retrieved.
     """
-    time.sleep(15)
-    question = "Who is 16th president of Notre Dome?"
-    response = rag_response_retriever.find_query_response(rag_corpus, question)[1]
-    print(f"{question} {response}")
+    print("\n\n\n")
+    query = "What does Varian Medical Systems do? Tell me briefly."
+    print(f"{query}\n {qa_agent.chat(query)}")
+    print(f"\n\n{'_'*50}\n\n")
+
+    query = "Based on the knowledge base documents, who is the president of Notre Dame university?"
+    print(f"{query}\n {qa_agent.chat(query)}")
+    print(f"\n\n{'_'*50}\n\n")
+    """
+
+    query = """
+            Summarize the following text: Natural language processing (NLP) is a subfield of 
+            artificial intelligence (AI) focused on the interaction between computers and 
+            humans through natural language. The ultimate objective of NLP is to enable 
+            computers to understand, interpret, and generate human language in a way that 
+            is valuable. Applications of NLP include language translation, sentiment analysis, 
+            speech recognition, and chatbots.
+    """
+    
+    """
+    print(f"{query}\n {qa_agent.chat(query)}")
+    print(f"\n\n{'_'*50}\n\n")
+
+    query = "What is todays date?"
+    print(f"{query}\n {qa_agent.chat(query)}")
+    print(f"\n\n{'_'*50}\n\n")
+
+    query = "According to our uploaded documents, When was Notre Dame University President last changed?"
+    print(f"{query}\n {qa_agent.chat(query)}")
+    print(f"\n\n{'_'*50}\n\n")
+
+
+    query = "What is latest Gemini model?"
+    print(f"{query}\n {qa_agent.chat(query)}")
+    print(f"\n\n{'_'*50}\n\n")
+    """
+
+    # The agent currently fails to answer this! I can make it iteratively to fix the issue (feed back the response to the agent together with the tool and ask it to try again)
+    # It may still not work as the web-search-tool fails to grab the correct data anyways
+    query = "What was the stock price of Google on November 25, 2025 according to the internet?"
+    print(f"{query}\n {qa_agent.chat(query)}")
+    print(f"\n\n{'_'*50}\n\n")
+
+
+    # I need to come up with an example that model fails to respond; then it figures out that if do it iteratively, it can find the answer using the web search tool
