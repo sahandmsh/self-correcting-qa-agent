@@ -1,13 +1,10 @@
 from base.constants import Constants
 from ddgs import DDGS
 from trafilatura import extract
-from urllib.parse import urlparse
 from typing import List, Dict, Optional
-from urllib.parse import urlparse
 
 import requests
 import time
-import urllib.robotparser
 
 
 class WebSearch:
