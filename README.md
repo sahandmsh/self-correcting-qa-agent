@@ -4,6 +4,16 @@ An intelligent question-answering agent that combines Retrieval-Augmented Genera
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+## 🎯 Why This Project?
+
+This repository demonstrates end-to-end open-loop agentic AI design:
+- Custom tool routing with strict JSON schemas
+- Modern RAG pipelines with re-ranking
+- Real-time web search integration
+- LLM orchestration
+
+It serves both as a learning project and a portfolio demonstration of applied NLP, and agentic system design.
+
 ## 🌟 Features
 
 - **Intelligent Tool Routing**: Automatically selects the best tool (RAG, web search, or general knowledge) based on query context
@@ -174,6 +184,13 @@ Merge Overlapping Chunks → Generate Response
 
 ### 3. Web Search Integration
 
+⚠️ Disclaimer
+This tool is provided for educational and research purposes only.
+It does not enforce robots.txt restrictions.
+Users are responsible for ensuring that their usage complies with 
+the terms of service and robots.txt rules of any website they access.
+The author assumes no responsibility for misuse.
+
 ```
 Query → DuckDuckGo Search → Fetch Web Pages → Extract Content → 
 Index in Temporary RAG Corpus → Retrieve & Generate
@@ -223,26 +240,6 @@ The agent uses carefully engineered system prompts for:
 
 Prompts are modular and defined in `base/constants.py` for easy customization.
 
-## 🔍 Example Outputs
-
-```python
-# Example 1: Web search for current events
-query = "What is Agentic AI? Tell me in a sentence."
-# Output: "Agentic AI refers to artificial intelligence systems that can 
-# autonomously make decisions, take actions, and adapt to achieve goals..."
-# Tool: web_search_tool
-
-# Example 2: Knowledge base query
-query = "Based on the knowledge base, who is the president of Notre Dame?"
-# Output: "According to the documents, Rev. John Jenkins is the president..."
-# Tool: rag_tool
-
-# Example 3: General knowledge
-query = "What is 2+2? Use your knowledge."
-# Output: "4"
-# Tool: none
-```
-
 ## 🤝 Contributing
 
 Contributions are welcome! Areas for improvement:
@@ -261,9 +258,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🙏 Acknowledgments
 
-- Built with [Sentence-Transformers](https://www.sbert.net/)
-- Powered by [Google Gemini](https://deepmind.google/technologies/gemini/)
-- Search via [DuckDuckGo](https://duckduckgo.com/)
+- Built with [Sentence-Transformers](https://www.sbert.net/) for semantic embeddings
+- Vector indexing powered by [FAISS](https://github.com/facebookresearch/faiss) (Meta AI)
+- LLM inference via [Google Gemini](https://deepmind.google/technologies/gemini/) and [Hugging Face Transformers](https://huggingface.co/docs/transformers/)
+- Cross-encoder re-ranking from [Sentence-Transformers](https://www.sbert.net/)
+- Web search via [DuckDuckGo](https://duckduckgo.com/)
 - Content extraction by [Trafilatura](https://trafilatura.readthedocs.io/)
 
 ## 📧 Contact
@@ -277,8 +276,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 If you use this project in your research, please cite:
 
 ```bibtex
-@software{mosharafan2025agenticai,
-  author = {Mosharafan, Sahand},
+@software{mosharafian2025agenticai,
+  author = {Mosharafian, Sahand},
   title = {Agentic AI: Intelligent QA Agent with RAG and Web Search},
   year = {2025},
   url = {https://github.com/sahandmsh/agentic_ai}
