@@ -1,112 +1,115 @@
-from base.constants import Constants
-from typing import List
 from agent.tools.rag_tool import RagTool
 from agent.tools.web_search_tool import WebSearchTool
+from base.constants import Constants
+from typing import Callable, Dict, Any, Tuple
 
 import json
-import os
-import textwrap
 
-# do some prompt engineering; maybe 2 step reasoning (thin/reason -> extract tool from the response by the LLM!). See if that works
-# use mps for the rest of models in this file if possible
-# Create a constants/configuration.json file to store settings
+
 class QAAgent:
-    def __init__(self, rag_tool: RagTool, web_search_tool: WebSearchTool, generative_model, memory_file: str = "memory.json"):
-        """"""
+    """Open-loop conversational agent equipped with retrieval tool, web search tool,and a generative model.
+
+    Attributes:
+        generative_model (Callable[[str], str]): Function or model interface used to generate
+            natural language responses.
+        tools (Dict[str, Dict[str, Any]]): Registry containing tool instances and metadata.
+    """
+
+    def __init__(
+        self,
+        rag_tool: RagTool,
+        web_search_tool: WebSearchTool,
+        generative_model: Callable[[str], str],
+    ) -> None:
+        """Initialize the QAAgent.
+
+        Args:
+            rag_tool (RagTool): Internal knowledge-base retrieval & generation wrapper.
+            web_search_tool (WebSearchTool): Live web search + retrieval interface.
+            generative_model (Callable[[str], str]): Callable that accepts a prompt and returns a
+                generated string response.
+        """
         self.generative_model = generative_model
-        self.tools = {
+        self.tools: Dict[str, Dict[str, Any]] = {
             "rag_tool": {
                 "instance": rag_tool,
-                "description": "Searches the indexed knowledge base for answers. Use this for questions about specific documents, facts in the knowledge base, or structured information that has been previously indexed. Best for factual queries where the answer should come from the internal knowledge base.",
-                "args": {"query": "The question to find the answer for from the knowledge base."},
-                "Returns": "The answer to the query from the knowledge base."
+                "description": (
+                    "Searches the indexed knowledge base for answers. Use this for questions "
+                    "about specific documents, facts in the knowledge base, or structured "
+                    "information that has been previously indexed. Best for factual queries "
+                    "where the answer should come from the internal knowledge base."
+                ),
+                "args": {
+                    "query": "The question whose answer should be drawn from indexed knowledge.",
+                    "max_results": "Maximum number of top similar items to retrieve.",
+                },
             },
             "web_search_tool": {
                 "instance": web_search_tool,
-                "description": "Performs real-time internet search for current, recent, or trending information not in the knowledge base. Use this for up-to-date news, latest developments, recent events, or information that requires real-time web access.",
-                "args": {"query": "The question to search on the web."},
-                "Returns": "The answer to the query from the web search."
-            }
+                "description": (
+                    "Performs real-time internet search for current, recent, or trending "
+                    "information not in the knowledge base. Use for up-to-date news or events."
+                ),
+                "args": {
+                    "query": "The question to search on the web.",
+                    "max_web_pages": "Maximum number of web search results to fetch.",
+                    "max_top_passages": "Number of top passages to retrieve from RAG.",
+                },
+            },
         }
-        self.chat_history = []
-        self.memory_file = memory_file
-        # self._load_memory()
 
+    def _tool_router(self, query: str) -> Dict[str, Any]:
+        """Select a tool by prompting the generative model with a routing instruction.
 
-    def _load_memory(self):
-        """ Loads chat history from the memory file if it exists.
+        The model is expected to return JSON like: {"tool": "rag_tool"} or {"tool": "web_search_tool"} or {"tool": "none"}.
+        Heuristics attempt JSON recovery if the raw output is not strictly valid.
+
+        Args:
+            query (str): User query text.
+
         Returns:
-            None
-        Raises:
-            FileNotFoundError: If the memory file does not exist.
+            Dict[str, Any]: Parsed JSON dictionary containing at least the key 'tool'.
         """
-        try:
-            with open(self.memory_file, "r") as f:
-                self.chat_history = json.load(f)
-        except FileNotFoundError:
-            raise FileNotFoundError("Could not find memory file. A new chat thread will be started.")
-
-
-    def _save_memory(self):
-        """
-        Saves the current chat history to the memory file.
-        Returns:
-            None
-        """
-        with open(self.memory_file, "w") as f:
-            json.dump(self.chat_history, f, indent = 4)
-
-
-    def _choose_tool(self, query: str, instructions: str = Constants.Instructions.TOOL_SELECTION_INSTRUCTION):
-        # LATER ADD HISTORY TO THE PROMPT
-        # Short, focused prompt to avoid information overload
-        # Use textwrap.dedent and .format to avoid f-string brace escaping issues
-        prompt = instructions.format(query = query)
+        prompt = Constants.Instructions.System.SystemModesTags.TOOL_ROUTER + "\n" + query
         response = str(self.generative_model(prompt))
-        print(response)
-        # Try direct JSON parse
         try:
-            parsed = json.loads(response)
-            return parsed
+            return json.loads(response)
         except Exception:
             pass
-
-        # Fallback: extract first balanced {...} substring and parse
         try:
-            start = response.index('{')
-            end = response.rindex('}')
-            snippet = response[start:end+1]
-            parsed = json.loads(snippet)
-            return parsed
-        except Exception:
-            # final fallback: give up and return none
+            start = response.index("{")
+            end = response.rindex("}")
+            snippet = response[start : end + 1]
+            return json.loads(snippet)
+        except:
             return {"tool": "none"}
-        
 
-    def chat(
-            self, 
-            query: str, 
-            context_based_instruction: str = Constants.Instructions.CONTEXT_BASED_INSTRUCTION, 
-            qa_instruction: str = Constants.Instructions.QA_INSTRUCTION
-        ):
-        # Incomplete; will test first then complete iteratively
-        """ Chats with the agent using the appropriate tool based on the query.
+    def chat(self, query: str) -> Tuple[str, str]:
+        """Process a user query, routing through an appropriate tool and generating a reply.
+
         Args:
-            query (str): The user's query.
+            query (str): User query.
+
         Returns:
-            str: The agent's response.
+            Tuple[str, str]: (agent_response, tool_used)
+                agent_response: Final generated answer.
+                tool_used: Name of tool selected or 'none'.
         """
-        tool_decision = self._choose_tool(query)
+        tool_decision = self._tool_router(query)
         tool_name = tool_decision.get("tool", "none")
         if tool_name == "none":
-            response = self.generative_model(qa_instruction.format(query = query))
+            prompt = Constants.Instructions.System.SystemModesTags.GENERAL_ASSISTANT + "\n" + query
+            response = self.generative_model(prompt=prompt)
         else:
-            tool = self.tools[tool_name]['instance']
-
-
-            # FIX FOLLOWING LATER SO IT WOULD BE ABLE TO PASS ARGS DYNAMICALLY
-            context = tool.use_tool(query)
-            prompt = context_based_instruction.format(context = context, query = query)
+            tool = self.tools[tool_name]["instance"]
+            args = tool_decision.get("args", {})
+            context = tool.use_tool(**args)
+            prompt = (
+                Constants.Instructions.System.SystemModesTags.CONTEXT_PREFERRED_ANSWERER
+                + "\nContext: "
+                + str(context)
+                + "\nQuery: "
+                + query
+            )
             response = self.generative_model(prompt)
         return response, tool_name
-        
