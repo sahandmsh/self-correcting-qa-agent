@@ -3,6 +3,7 @@ from ddgs import DDGS
 from trafilatura import extract
 from typing import List, Dict, Optional
 
+import datetime
 import requests
 import time
 
@@ -28,6 +29,8 @@ class WebSearch:
             results = ddgs.text(query, max_results=max_results)
             for result in results:
                 url = result.get("href", None)
+                if url:
+                    urls.append(url)
         return urls
 
     def _fetch_page_content(
@@ -85,5 +88,5 @@ class WebSearch:
             except:
                 pass
         if not documents:
-            return [{"url": "NA", "content": "NA"}]
+            raise Exception("No web content could be retrieved for the query.")
         return documents

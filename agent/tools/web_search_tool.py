@@ -28,10 +28,9 @@ class WebSearchTool:
         """Execute web search + RAG retrieval for a query.
 
         Process:
-            1. Clear existing corpus content (stateless per invocation).
-            2. Fetch up to `max_web_pages` web results and index them (chunking/embedding handled downstream).
-            3. Run similarity search to rank indexed passages.
-            4. Return the single highest scoring passage and its relevance score.
+            1. Fetch up to `max_web_pages` web results and index them (chunking/embedding handled downstream).
+            2. Run similarity search to rank indexed passages.
+            3. Return the top `max_top_passages` scoring passages and their relevance scores.
 
         Args:
             query (str): User query
@@ -41,7 +40,6 @@ class WebSearchTool:
         Returns:
             List[str]: Top passages retrieved from web search results.
         """
-        self.rag_corpus._clear_corpus()
         self.rag_corpus.add_update_data_and_index(
             self.web_search.search(query, max_results=max_web_pages), text_content_key="content"
         )

@@ -172,7 +172,7 @@ class RAGContentRetriever:
         cross_encoder_top_k=5,
         cross_encoder_batch_size: int = 16,
         max_cross_encoder_token_length: int = 512,
-        rag_based_instruction: str = Constants.Instructions.RAG_CONTEXT_BASED_INSTRUCTION,
+        rag_based_instruction: str = Constants.Instructions.RAG_CONTEXT_BASED_INSTRUCTIONS,
     ) -> Tuple[str, str]:
         """
         Retrieve the most relevant context and generate a natural language response for a query.
@@ -191,7 +191,7 @@ class RAGContentRetriever:
             cross_encoder_top_k (int, optional): Number of passages kept after cross-encoder re-ranking. Defaults to 5.
             cross_encoder_batch_size (int, optional): Batch size for cross-encoder inference. Defaults to 16.
             max_cross_encoder_token_length (int, optional): Maximum token length for cross-encoder inputs. Defaults to 512.
-            rag_based_instruction (str, optional): Instruction template for RAG prompt. Defaults to Constants.Instructions.RAG_CONTEXT_BASED_INSTRUCTION.
+            rag_based_instruction (str, optional): Instruction template for RAG prompt. Defaults to Constants.Instructions.RAG_CONTEXT_BASED_INSTRUCTIONS.
 
         Returns:
             tuple:

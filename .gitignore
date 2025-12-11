@@ -4,3 +4,4 @@ __pycache__/
 venv/
 data/vector_store/
 .vscode/
+agent_history.json
