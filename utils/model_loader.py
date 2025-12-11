@@ -95,7 +95,7 @@ class ModelLoader:
         client = genai.Client(api_key=google_api_key)
 
         def generate(prompt: str):
-            date_time = f"[CURRENT DATE AND TIME: {datetime.datetime.now().strftime("%B %d, %Y %I:%M %p")}\n"
+            date_time = f"[CURRENT DATE AND TIME: {datetime.datetime.now().strftime('%B %d, %Y %I:%M %p')}]\n"
             response = client.models.generate_content(
                 model=model_name,
                 contents=date_time + prompt,
@@ -133,7 +133,7 @@ class ModelLoader:
         model = model.to(device)
 
         def generate(prompt: str):
-            date_time = f"[CURRENT DATE AND TIME: {datetime.datetime.now().strftime("%B %d, %Y %I:%M %p")}\n"
+            date_time = f"[CURRENT DATE AND TIME: {datetime.datetime.now().strftime('%B %d, %Y %I:%M %p')}\n"
             inputs = tokenizer(date_time + prompt, return_tensors="pt")
             inputs = {k: v.to(device) for k, v in inputs.items()}
             input_len = inputs["input_ids"].shape[1]

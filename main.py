@@ -1,14 +1,12 @@
 from agent.agent import QAAgent
+from agent.tools.rag_tool import RagTool
+from agent.tools.web_search_tool import WebSearchTool
 from base.constants import Constants
 from config import HF_TOKEN, GOOGLE_API_KEY
 from google.genai import types
 from rag.rag_content_retriever import RAGContentRetriever, RAGCorpusManager
-from agent.tools.rag_tool import RagTool
-from agent.tools.web_search_tool import WebSearchTool
-from utils.model_loader import ModelLoader
 from utils.dataset_utils import DataSetUtil
-from agent.tools.web_search_tool import WebSearchTool
-from utils.web_search import WebSearch
+from utils.model_loader import ModelLoader
 
 if __name__ == "__main__":
     # ============================================================================
