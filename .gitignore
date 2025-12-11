@@ -5,3 +5,4 @@ venv/
 data/vector_store/
 .vscode/
 agent_history.json
+.DS_Store
