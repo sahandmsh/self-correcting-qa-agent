@@ -99,7 +99,7 @@ response, context = agent.agent_chat("What is Agentic AI?", max_tries=5)
 print(response)
 ```
 
-## � ReAct Loop Example
+## ReAct Loop Example
 
 Here's what happens when you call `agent.agent_chat()`:
 
@@ -380,14 +380,14 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 **Sahand Mosharafian**
 - GitHub: [@sahandmsh](https://github.com/sahandmsh)
-- Project Link: [https://github.com/sahandmsh/agentic_ai](https://github.com/sahandmsh/agentic-ai-2)
+- Project Link: [https://github.com/sahandmsh/agentic-ai-2](https://github.com/sahandmsh/agentic-ai-2)
 
 ## 🔖 Citation
 
 If you use this project in your research, please cite:
 
 ```bibtex
-@software{mosharafian2025agenticai,
+@software{mosharafian2025agenticai2,
   author = {Mosharafian, Sahand},
   title = {Agentic AI: Self-Correcting ReAct Agent with RAG and Web Search},
   year = {2025},
