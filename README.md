@@ -1,4 +1,4 @@
-# Agentic AI - Intelligent QA Agent 2: Self-Correcting ReAct Agent
+# Self-correcting QA Agent:
 
 An intelligent question-answering agent that combines Retrieval-Augmented Generation (RAG) with real-time web search capabilities using a **ReAct (Reasoning and Acting) framework** with self-correction. The agent automatically routes queries to the most appropriate tool—whether that's an indexed knowledge base, live web search, or the model's general knowledge—and iteratively refines its responses through self-reflection and feedback loops.
 
@@ -380,18 +380,18 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 **Sahand Mosharafian**
 - GitHub: [@sahandmsh](https://github.com/sahandmsh)
-- Project Link: [https://github.com/sahandmsh/agentic-ai-2](https://github.com/sahandmsh/agentic-ai-2)
+- Project Link: [https://github.com/sahandmsh/agentic-ai-2](https://github.com/sahandmsh/self-correcting-qa-agent)
 
 ## 🔖 Citation
 
 If you use this project in your research, please cite:
 
 ```bibtex
-@software{mosharafian2025agenticai2,
+@software{mosharafian2025selfcorrectingqaagent,
   author = {Mosharafian, Sahand},
   title = {Agentic AI: Self-Correcting ReAct Agent with RAG and Web Search},
   year = {2025},
-  url = {https://github.com/sahandmsh/agentic-ai-2}
+  url = {https://github.com/sahandmsh/self-correcting-qa-agent}
 }
 ```
 
