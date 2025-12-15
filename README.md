@@ -1,4 +1,4 @@
-# Self-correcting QA Agent:
+# Self-correcting QA Agent
 
 An intelligent question-answering agent that combines Retrieval-Augmented Generation (RAG) with real-time web search capabilities using a **ReAct (Reasoning and Acting) framework** with self-correction. The agent automatically routes queries to the most appropriate tool—whether that's an indexed knowledge base, live web search, or the model's general knowledge—and iteratively refines its responses through self-reflection and feedback loops.
 
